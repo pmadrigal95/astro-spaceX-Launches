@@ -1,0 +1,57 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+import type { GetStaticPaths } from "astro";
+// Dynamic page
+
+import { getLaunchBy, getLatestLaunches } from '../../services/spacex';
+
+
+export const prerender = false // server
+
+const { id } = Astro.params
+
+let launch;
+
+if(id) {
+
+    launch = await getLaunchBy({ id });
+}
+
+// if (!id) { // Solo para el servidor
+//     Astro.redirect('/');
+// }
+
+    export const getStaticPaths = ( async () => {
+
+        // llamar a una API externa
+        // para saber todas las ids que debes generar
+        
+        // return [
+        //     {
+        //         params: {
+        //             id: '5eb87cd9ffd86e000604b32a'
+        //         }
+        //     }
+        // ];
+
+
+        const launches = await getLatestLaunches();
+
+        return launches.map(launch => ({
+            params: { id: launch.id }
+        }));
+
+
+    }) satisfies GetStaticPaths;
+
+---
+
+<Layout title={`Launch ${id}`}>
+    <article class="flex gap-y-4 flex-col">
+        <img class="w-52 h-auto" src={launch?.links?.patch.small} alt={launch?.name}>
+        <h2 class="text-4xl text-white font-bold">Launch #{launch?.flight_number}</h2>
+        <p class="text-lg" >{launch?.details}</p>
+    </article>
+</Layout>
+
